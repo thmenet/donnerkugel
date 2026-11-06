@@ -5,6 +5,7 @@ Murmel-Rätselspiel fürs iPhone, inspiriert von Mechaniken klassischer Murmelsp
 ## Stand (November 2026)
 
 - Spiel läuft im Browser: https://thmenet.github.io/donnerkugel/ (GitHub Pages, Branch `main`, Ordner `/`)
+- 36 Level (Level 1–8 Einführung, 9–36 neu seit 6.11.2026).
 - Neigen, Ton (inkl. iPhone-Stummschalter) und Fingersteuerung funktionieren laut Test von Thomas.
 - iOS-App mit Capacitor 8 eingerichtet (Swift Package Manager, keine CocoaPods).
 - App Store Connect: App „Donnerkugel“ angelegt, Bundle-ID `ch.menet.donnerkugel`, Team-ID `JQ76949CP7`, Status „In Vorbereitung zur Übermittlung“.
@@ -14,6 +15,7 @@ Murmel-Rätselspiel fürs iPhone, inspiriert von Mechaniken klassischer Murmelsp
 ## Dateien
 
 - `donnerkugel.html` – **die einzige Quelle des Spiels** (HTML/CSS/JS in einer Datei, ohne `<html>/<head>`, weil sie auch als Claude-Artifact veröffentlicht wird). Nur diese Datei bearbeiten.
+- `scripts/check-levels.mjs` – prüft alle Level (Grösse, Paare, Erreichbarkeit inkl. Schalter/Tore). Läuft automatisch bei `npm run build`.
 - `scripts/build.mjs` – erzeugt daraus `index.html` (GitHub Pages) und `www/index.html` (App).
 - `assets/icon.svg` → `scripts/icon.mjs` rendert App-Symbol, Splash und `apple-touch-icon.png`.
 - `privacy.html` – Datenschutz- und Supportseite.
@@ -41,6 +43,5 @@ Nach Änderungen: `npm run sync`, committen, pushen (GitHub Pages ist nach ~1 Mi
 
 ## Ideen für später
 
-- Mehr Level (Ziel 20–30) für die App-Store-Version
 - App-Store-Texte (Untertitel, Beschreibung, Suchbegriffe) auf Deutsch, evtl. Englisch
 - Screenshots für das iPhone

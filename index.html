@@ -68,10 +68,11 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:14px;background:var(--hall);border:1px solid var(--line)}
 .seg button{height:42px;border:0;border-radius:10px;background:transparent;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
-.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.levels button{aspect-ratio:1;max-width:100%;border:1px solid var(--line);border-radius:12px;background:var(--hall);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px}
-.levels button b{font-family:var(--font-display);font-size:20px;font-weight:800}
-.levels button small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.levels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.levels button{aspect-ratio:1;max-width:100%;border:1px solid var(--line);border-radius:10px;background:var(--hall);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
+.levels button b{font-family:var(--font-display);font-size:16px;font-weight:800}
+.levels button small{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.levels button.done{border-color:rgba(217,167,82,.35)}
 .levels button.cur{border-color:var(--brass)}
 .levels button:disabled{opacity:.35;cursor:default}
 .row{display:flex;gap:10px}
@@ -168,13 +169,97 @@ const LEVELS = [
     "#...#g#...#","#...#c#...#","#...###...#","#ggg...ggg#","#.........#","#b...c...a#","###########"]},
   { name:"Irrgarten", tip:"Gänge, Sand und Abgründe. Nimm dir Zeit.", map:[
     "#####a#####","#....@....#","#.###.###.#","#.#.....#.#","#.#.###.#.#","b.#.#d#.#.c","#.........#","#####.#####",
-    "#_..:.:.._#","#.__:.:__.#","#...:::...#","d.........b","#.__...__.#","#....a....#","#####c#####"]},
+    "#_..:.:.._#","#.__:.:__.#","#...:::...#","d.........b","#.__...__.#","#...a.....#","#####c#####"]},
   { name:"Eiskanal", tip:"Eis, Tore und ein Schalter. Plane die Reihenfolge.", map:[
     "###a###b###","#~~~~~~~~~#","#~_~~~~~_~#","#~~~~~~~~~#","####=#=####","c....@....d","#.........#","#.........#",
     "#s........#","#####-#####","#.........#","#.:::::::.#","d.:.....:.c","#.:::::::.#","###b###a###"]},
-  { name:"Finale", tip:"Fünf Paare, Glas, Eis und ein Tor. Viel Glück!", map:[
+  { name:"Alles zusammen", tip:"Fünf Paare, Glas, Eis und ein Tor. Viel Glück!", map:[
     "#a#b#c#d#e#","#.........#","#ggggggggg#","#.........#","#.__._.__.#","#s........#","#~~~~~~~~~#","#~~_~@~_~~#",
     "#~~~~~~~~~#","#####=#####","#........:#","#..:::....#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Vier Ecken", tip:"Zwei Abgrundbalken mit schmalen Lücken. Zielen!", map:[
+    "###########","#a.......b#","#.........#","#...._....#","c...._....d","#.........#","#__.___.__#","#....@....#",
+    "#__.___.__#","#.........#","d...._....c","#...._....#","#.........#","#b.......a#","###########"]},
+  { name:"Sandkasten", tip:"Im Sand kommst du nur langsam voran. Such die festen Wege.", map:[
+    "#####a#####","#:::::::::#","#:::...:::#","#::.....::#","b:...:...:c","#::.....::#","#:::.@.:::#","#:::::::::#",
+    "#..:::::..#","#....:....#","c...:::...b","#....:....#","#d.......d#","#.........#","#####a#####"]},
+  { name:"Schlittschuh", tip:"Eine ganze Eisbahn. Bremsen ist schwer, plane deine Bahn.", map:[
+    "##a##b##c##","#~~~~~~~~~#","#~~~~~~~~~#","#~~~~~~~~~#","#~~~...~~~#","#~~~.@.~~~#","#~~~...~~~#","#~~~~~~~~~#",
+    "#~~~~~~~~~#","#~~~~~~~~~#","#~~~~~~~~~#","#~~~~~~~~~#","#~~~~~~~~~#","#~~~~~~~~~#","##c##a##b##"]},
+  { name:"Brücken", tip:"Schmale Brücken über dem Abgrund. Langsam ist sicher.", map:[
+    "###########","#a...#...b#","#....#....#","#__.___.__#","#__.___.__#","#....@....#","#.___.___.#","#.___.___.#",
+    "c.........d","#___._.___#","#___._.___#","#.........#","#.c.....d.#","#.........#","###b###a###"]},
+  { name:"Doppeltor", tip:"Zwei Schalter, vier Tore. Jeder Schalter dreht alle Tore um.", map:[
+    "###a###b###","#.........#","#.........#","####=#=####","#.........#","c....@....d","#.........#","#........s#",
+    "#.........#","####-#-####","#.........#","d.........c","#s........#","#.........#","###b###a###"]},
+  { name:"Glashaus", tip:"Die Steine stecken in Glaskästen. Mit Schwung hinein!", map:[
+    "###########","#.........#","#.ggg.ggg.#","#.gag.gbg.#","#.ggg.ggg.#","#.........#","#....@....#","#.........#",
+    "#.ggg.ggg.#","#.gcg.gdg.#","#.ggg.ggg.#","#.........#","#.........#","#.........#","###b#c#a#d#"]},
+  { name:"Spirale", tip:"Ein langer Weg nach draussen. Folge der Spirale.", map:[
+    "##b#####c##","#.........#","#.#######.#","#.#.....#.#","#.#.###.#.#","#.#.#a#.#.#","#.#.#@#.#.#","#.#...#.#.#",
+    "#.#####.#.#","#.......#.#","#########.#","b.........c","#.d.....d.#","#.........#","#####a#####"]},
+  { name:"Schachbrett", tip:"Abgründe im Schachbrettmuster. Nicht schräg rollen!", map:[
+    "#####a#####","#.........#","#._._._._.#","c.........b","#_._._._._#","#.........#","#._._._._.#","b....@....c",
+    "#._._._._.#","#.........#","#_._._._._#","#.........#","#._._._._.#","#d.......d#","#####a#####"]},
+  { name:"Fünf Paare", tip:"Zehn Steine oben und unten. Merk dir die Farben!", map:[
+    "#a#b#c#d#e#","#.........#","#.........#","#..#...#..#","#.........#","#....@....#","#.........#","#.__...__.#",
+    "#.........#","#..#...#..#","#.........#","#.........#","#.........#","#.........#","#c#e#a#d#b#"]},
+  { name:"Löchriges Eis", tip:"Eis mit Löchern. Kleine Bewegungen!", map:[
+    "###a###b###","#~~~~~~~~~#","#~_~~~~~_~#","#~~~~_~~~~#","#~_~~~~~_~#","c~~~~~~~~~d","#~~_~.~_~~#","#~~~~@~~~~#",
+    "#~~_~.~_~~#","d~~~~~~~~~c","#~_~~~~~_~#","#~~~~_~~~~#","#~_~~~~~_~#","#~~~~~~~~~#","###b###a###"]},
+  { name:"Kammern", tip:"Vier Kammern, ein Schalter. Immer zwei Tore sind offen.", map:[
+    "###########","#a...#...b#","#..c.#.d..#","#....#....#","##=######-#","#.........#","#....@....#","#....s....#",
+    "#.........#","##-######=#","#....#....#","#..b.#.a..#","#c...#...d#","#....#....#","###########"]},
+  { name:"Zickzack", tip:"Hin und her, Stockwerk für Stockwerk.", map:[
+    "###########","#@........#","#########.#","a.........#","#.#########","#.........b","#########.#","c.........#",
+    "#.#########","#.........d","#########.#","#.........#","#.:::::::.#","#.b.c.d.a.#","###########"]},
+  { name:"Sechs Farben", tip:"Zum ersten Mal sechs Paare. Eis, Sand, Glas und Abgründe.", map:[
+    "#a#b#c#d#e#","#.........#","f.........#","#..~~~~~..#","#..~~~~~..#","#....@....#","#..:::::..#","#.........#",
+    "#_..._..._#","#.........#","#..ggggg..#","#.........#","#.........f","#.........#","#e#d#c#b#a#"]},
+  { name:"Inseln", tip:"Kleine Inseln, verbunden durch schmale Stege.", map:[
+    "###########","#a._____.b#","#..__.__..#","#_.__.__._#","#_.__.__._#","#_......._#","#___.@.___#","#_......._#",
+    "#_.__.__._#","#_.__.__._#","#..__.__..#","#c.__.__.d#","#____.____#","#_.b...a._#","####d#c####"]},
+  { name:"Glaslabyrinth", tip:"Glaswände versperren den Weg. Wischen bricht sie auf.", map:[
+    "#####a#####","#....@....#","#g#######g#","#.#.....#.#","#.#.###.#.#","b.g.#c#.g.d","#.#.....#.#","#.#######.#",
+    "#.........#","###g###g###","#.........#","#.ggg.ggg.#","#.gcg.gbg.#","#.........#","###d#a#####"]},
+  { name:"Schleuse", tip:"Eine Schleuse: Der Schalter öffnet das eine Tor und schliesst das andere.", map:[
+    "###a#b#c###","#.........#","#.........#","#####=#####","#....s....#","#####-#####","#.........#","#....@....#",
+    "#.........#","#~~~~~~~~~#","#~~__~__~~#","#~~~~~~~~~#","#.........#","#.........#","###c#b#a###"]},
+  { name:"Rutschpartie", tip:"Eisige Gänge zwischen Säulen. Rutsch nicht vorbei!", map:[
+    "###########","#a~~~~~~~b#","#~#######~#","#~#.....#~#","#~#.:::.#~#","#~#.:@:.#~#","#~#.:::.#~#","#~#.....#~#",
+    "#~###.###~#","#~~~~~~~~~#","#~#~#~#~#~#","c~~~~~~~~~d","#~#~#~#~#~#","#b~c~~~d~a#","###########"]},
+  { name:"Sanddünen", tip:"Fünf Paare in den Dünen. Die Abgründe lauern dazwischen.", map:[
+    "##a#####b##","#:::...:::#","#::.....::#","#:.._._..:#","#:.......:#","c:::.@.:::d","#:.......:#","#::::_::::#",
+    "#.........#","#.:::.:::.#","d.:e:.:e:.c","#.:::.:::.#","#.........#","#.........#","##b#####a##"]},
+  { name:"Kreuzung", tip:"Ein Kreuz über dem Nichts. Die Steine stehen mitten im Weg.", map:[
+    "#####a#####","#___...___#","#___...___#","#___...___#","#___.a.___#","b.........c","#....@....#","d.........#",
+    "#___.c.___#","#___...___#","#___...___#","#___...___#","#___.b.___#","#___...___#","#####d#####"]},
+  { name:"Tresor", tip:"Hinter Toren und Glas liegen die Schätze. Ein Schalter, vier Tore.", map:[
+    "###########","#a=.....-b#","###.....###","#.........#","#.ggg.ggg.#","#.gcg.gdg.#","#.ggg.ggg.#","#....@....#",
+    "#....s....#","#.........#","###.....###","#c-.....=d#","###.....###","#....:....#","###b###a###"]},
+  { name:"Am Abgrund", tip:"Schmale Wege, tiefe Abgründe. Ruhige Hand!", map:[
+    "###########","#a._____.b#","#.c_____d.#","#._______.#","#.........#","#____.____#","#____@____#","#____.____#",
+    "#_......._#","#_._____._#","#a._____.b#","#_._____._#","#_......._#","#___c_d___#","###########"]},
+  { name:"Kaleidoskop", tip:"Sechs Paare kreuz und quer. Gutes Gedächtnis gefragt!", map:[
+    "###########","#.........#","#.a..~..b.#","#...~~~...#","#.c.~~~.d.#","#...~~~...#","#.e..@..f.#","#.........#",
+    "#.f..:..e.#","#...:::...#","#.d.:::.c.#","#...:::...#","#.b..:..a.#","#.........#","###########"]},
+  { name:"Eiskammern", tip:"Vier Eiskammern hinter Toren. Wer schaltet, muss auch zurückkommen.", map:[
+    "###a###b###","#~~~~#~~~~#","#~~~~#~~~~#","#~~~~#~~~~#","##=#####-##","#.........#","c....@....d","#.........#",
+    "#....s....#","##-#####=##","#~~~~#~~~~#","#~~~~#~~~~#","#~_~a#b~_~#","#~~~~#~~~~#","###d###c###"]},
+  { name:"Doppelschleuse", tip:"Zwei Schleusen, vier Schalter. Jeder Schalter dreht alle Tore um.", map:[
+    "###a###b###","#.........#","#.........#","###=###=###","#..s...s..#","###-###-###","#.........#","c....@....d",
+    "#.........#","###-###=###","#..s...s..#","###=###-###","#.b.....a.#","#.........#","###d###c###"]},
+  { name:"Scherben", tip:"Glas überall. Hier brauchst du viel Schwung.", map:[
+    "#a#b#c#d#e#","#.........#","#ggggggggg#","#.........#","#g.g.g.g.g#","#.........#","#....@....#","#.........#",
+    "#.g.g.g.g.#","#.........#","#ggggggggg#","#.........#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Irrweg", tip:"Ein Labyrinth mit Sackgassen. Unten wartet Sand.", map:[
+    "#####a#####","#.....#...#","#.###.#.#.#","#.#.a.#.#.#","#.#.###.#.#","b.#.....#.c","#.#####.#.#","#...@...#.#",
+    "#######.#.#","#.......#.#","#.#######.#","#.........#","#:::_:_:::#","#d.c...b.d#","###########"]},
+  { name:"Meisterprüfung", tip:"Eis, Glas, Tore und zwei Schalter. Zeig, was du kannst!", map:[
+    "#a#b#c#d#e#","#~~~~~~~~~#","#ggggggggg#","#.........#","#____=____#","#s........#","#~~~~@~~~~#","#~~_~~~_~~#",
+    "#~~~~~~~~~#","####-######","#.........#","#.:::s:::.#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Finale", tip:"Sechs Paare und alles, was du gelernt hast. Viel Glück!", map:[
+    "#a#b#c#d#e#","#.........#","#.ggggggg.#","f.~~~~~~~.f","#.~_~~~_~.#","#.~~~~~~~.#","###=#.#=###","#....@....#",
+    "#s.......s#","###-#_#-###","#.........#","#.__:::__.#","#.........#","#..g...g..#","#e#d#c#b#a#"]},
 ];
 
 const COLS = 11, ROWS = 15, R = 0.3;
@@ -790,10 +875,11 @@ function renderLevels(){
     b.id = "lvl" + i;
     const locked = i >= progress.unlocked;
     b.disabled = locked;
-    if (i === cur) b.className = "cur";
+    const done = progress.best[i] != null;
+    b.className = (i === cur ? "cur" : "") + (done ? " done" : "");
     const n = document.createElement("b"); n.textContent = i + 1;
     const s = document.createElement("small");
-    s.textContent = locked ? "gesperrt" : (progress.best[i] != null ? fmt(progress.best[i]) : L.name);
+    s.textContent = done ? fmt(progress.best[i]) : "–";
     b.append(n, s);
     b.setAttribute("aria-label", `Level ${i + 1}: ${L.name}${locked ? " (gesperrt)" : ""}`);
     b.addEventListener("click", () => { begin(); loadLevel(i); resume(); });

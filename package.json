@@ -4,9 +4,10 @@
   "private": true,
   "description": "Donnerkugel – Murmel-Rätselspiel",
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "build": "node scripts/check-levels.mjs && node scripts/build.mjs",
     "icons": "node scripts/icon.mjs && capacitor-assets generate --ios",
-    "sync": "npm run build && cap sync ios"
+    "sync": "npm run build && cap sync ios",
+    "check": "node scripts/check-levels.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.6.0",
