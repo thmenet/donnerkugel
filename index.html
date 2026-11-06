@@ -367,11 +367,19 @@ addEventListener("blur", () => keys.clear());
 let actx = null;
 function ensureAudio(){
   if (!settings.sound) return;
-  if (!actx){ try{ actx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return; } }
-  if (actx.state === "suspended") actx.resume().catch(() => {});
+  // iOS: play through the silent switch like a media app
+  try{ if (navigator.audioSession) navigator.audioSession.type = "playback"; }catch(e){}
+  if (!actx){
+    try{ actx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return; }
+    // iOS unlock: a silent buffer started inside the tap
+    try{ const b = actx.createBufferSource(); b.buffer = actx.createBuffer(1, 1, 22050); b.connect(actx.destination); b.start(0); }catch(e){}
+  }
+  if (actx.state !== "running") actx.resume().catch(() => {});
 }
+// iOS only unlocks audio on touchend/click, not on touchstart/pointerdown
+["touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, ensureAudio, {passive:true}));
 function tone(freq, dur, type = "sine", vol = .12, slide = 0, delay = 0){
-  if (!actx || !settings.sound) return;
+  if (!actx || !settings.sound || actx.state !== "running") return;
   const t = actx.currentTime + delay, o = actx.createOscillator(), g = actx.createGain();
   o.type = type; o.frequency.setValueAtTime(freq, t);
   if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq * slide), t + dur);
@@ -381,7 +389,7 @@ function tone(freq, dur, type = "sine", vol = .12, slide = 0, delay = 0){
   o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + .05);
 }
 function noise(dur, vol, freq){
-  if (!actx || !settings.sound) return;
+  if (!actx || !settings.sound || actx.state !== "running") return;
   const n = Math.floor(actx.sampleRate * dur), buf = actx.createBuffer(1, n, actx.sampleRate), d = buf.getChannelData(0);
   for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
   const src = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
@@ -826,7 +834,7 @@ $("calBtn").addEventListener("click", () => {
   enableTilt();
   if (tiltOK){ calib = {...raw}; toast("Kalibriert. Diese Haltung gilt jetzt als flach."); }
 });
-$("soundBtn").addEventListener("click", () => { settings.sound = !settings.sound; store.set("settings", settings); if (settings.sound) ensureAudio(); updateHint(); });
+$("soundBtn").addEventListener("click", () => { settings.sound = !settings.sound; store.set("settings", settings); if (settings.sound){ ensureAudio(); setTimeout(() => sfx.match("a"), 60); } updateHint(); });
 $("nextBtn").addEventListener("click", () => { loadLevel(cur + 1); resume(); });
 $("againBtn").addEventListener("click", () => { loadLevel(cur); resume(); });
 $("toMenuBtn").addEventListener("click", () => { $("win").hidden = true; openMenu(); });
