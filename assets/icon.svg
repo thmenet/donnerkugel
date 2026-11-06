@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+      <stop offset="0" stop-color="#22322f"/><stop offset="1" stop-color="#090f11"/>
+    </radialGradient>
+    <radialGradient id="ball" cx="36%" cy="32%" r="72%">
+      <stop offset="0" stop-color="#93a3a9"/><stop offset=".42" stop-color="#252e32"/><stop offset="1" stop-color="#030506"/>
+    </radialGradient>
+    <linearGradient id="bolt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#d9a752"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="30"/></filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <g stroke="rgba(0,0,0,.28)" stroke-width="6">
+    <path d="M128 0V1024M256 0V1024M384 0V1024M512 0V1024M640 0V1024M768 0V1024M896 0V1024"/>
+    <path d="M0 128H1024M0 256H1024M0 384H1024M0 512H1024M0 640H1024M0 768H1024M0 896H1024"/>
+  </g>
+  <rect x="96" y="96" width="210" height="210" rx="26" fill="#f2b33d" filter="url(#glow)" opacity=".9"/>
+  <rect x="96" y="96" width="210" height="210" rx="26" fill="#f2b33d"/>
+  <circle cx="201" cy="201" r="46" fill="rgba(12,18,20,.75)"/>
+  <rect x="718" y="718" width="210" height="210" rx="26" fill="#3fd0d4" filter="url(#glow)" opacity=".9"/>
+  <rect x="718" y="718" width="210" height="210" rx="26" fill="#3fd0d4"/>
+  <path d="M823 768 L873 856 L773 856 Z" fill="rgba(12,18,20,.75)"/>
+  <ellipse cx="555" cy="575" rx="262" ry="250" fill="#000" opacity=".55" filter="url(#soft)"/>
+  <circle cx="512" cy="512" r="262" fill="url(#ball)"/>
+  <path d="M572 318 L438 548 L516 548 L462 724 L616 474 L532 474 L598 318 Z" fill="url(#bolt)" stroke="#2a1c05" stroke-width="10" stroke-linejoin="round"/>
+  <ellipse cx="410" cy="392" rx="78" ry="42" fill="#fff" opacity=".75" transform="rotate(-35 410 392)"/>
+</svg>

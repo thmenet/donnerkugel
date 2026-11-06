@@ -1,0 +1,11 @@
+{
+  "appId": "ch.menet.donnerkugel",
+  "appName": "Donnerkugel",
+  "webDir": "www",
+  "backgroundColor": "#0c1214",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0c1214",
+    "scrollEnabled": false
+  }
+}

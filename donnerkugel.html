@@ -395,12 +395,22 @@ function noise(dur, vol, freq){
   src.buffer = buf; f.type = "highpass"; f.frequency.value = freq; g.gain.value = vol;
   src.connect(f).connect(g).connect(actx.destination); src.start();
 }
-const buzz = ms => { try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
+// In the iOS app: native Taptic Engine via Capacitor Haptics. In the browser: vibrate (Android only).
+const nativeHaptics = () => (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) || null;
+const buzz = ms => {
+  const h = nativeHaptics();
+  try{
+    if (h){
+      if (Array.isArray(ms)) h.notification({type:"SUCCESS"});
+      else h.impact({style: ms >= 35 ? "HEAVY" : ms >= 20 ? "MEDIUM" : "LIGHT"});
+    } else if (navigator.vibrate) navigator.vibrate(ms);
+  }catch(e){}
+};
 const sfx = {
-  open: p => tone(PAIR[p].note, .22, "triangle", .14),
+  open: p => { tone(PAIR[p].note, .22, "triangle", .14); buzz(10); },
   match: p => { const n = PAIR[p].note; tone(n, .3, "triangle", .14); tone(n * 1.5, .5, "triangle", .12, 0, .09); buzz(25); },
-  miss: () => tone(170, .28, "square", .04, .7),
-  thud: v => tone(95, .08, "sine", Math.min(.22, v * .035)),
+  miss: () => { tone(170, .28, "square", .04, .7); buzz(20); },
+  thud: v => { tone(95, .08, "sine", Math.min(.22, v * .035)); if (v > 3.5) buzz(v > 6.5 ? 25 : 10); },
   tink: () => tone(2400, .06, "triangle", .05),
   shatter: () => { noise(.4, .25, 2500); tone(1900, .25, "triangle", .05, .5); buzz(30); },
   fall: () => tone(440, .7, "sine", .12, .18),

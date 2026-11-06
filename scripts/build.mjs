@@ -1,0 +1,20 @@
+// Builds the standalone page from donnerkugel.html (the Artifact source):
+//   index.html      -> GitHub Pages
+//   www/index.html  -> iOS app (Capacitor)
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+
+const body = readFileSync("donnerkugel.html", "utf8");
+const head =
+  '<!doctype html><html lang="de"><head><meta charset="utf-8">' +
+  '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">' +
+  '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">' +
+  '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#0c1214">' +
+  '<link rel="apple-touch-icon" href="apple-touch-icon.png">' +
+  "<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}" +
+  "body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style></head><body>\n";
+const page = head + body + "\n</body></html>\n";
+
+writeFileSync("index.html", page);
+mkdirSync("www", { recursive: true });
+writeFileSync("www/index.html", page);
+console.log("built index.html and www/index.html");
