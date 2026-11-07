@@ -62,6 +62,11 @@ Nach Änderungen: `npm run sync`, committen, pushen (GitHub Pages ist nach ~1 Mi
 ## Ideen für später
 
 - Weitere Level bis mindestens 100 (vor dem Finale einfügen)
+- **Vorgemerkt von Thomas (7.11.2026), für ein späteres Paket (PC):**
+  - **Wurmlöcher:** paarweise verbundene Felder; die Kugel verschwindet im einen und taucht mit gleichem Tempo im anderen auf.
+  - **Tunnels:** Gänge, in denen die Kugel unter Wänden durchrollt (nur an den Enden sichtbar), evtl. Einbahn-Tunnels.
+  - Ideen für den Level-Aufbau dazu: Wurmloch-Rätsel über mehrere Kammern, Tunnel als Abkürzung oder Falle, Kombination mit Kisten (Explosion auf der anderen Seite) und Schaltern.
+  - Ablauf: Thomas testet zuerst Paket 1 durch und meldet Rückmeldungen.
 
 - App-Store-Texte (Untertitel, Beschreibung, Suchbegriffe) auf Deutsch, evtl. Englisch
 - Screenshots für das iPhone
