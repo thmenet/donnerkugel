@@ -5,17 +5,25 @@ Murmel-Rätselspiel fürs iPhone, inspiriert von Mechaniken klassischer Murmelsp
 ## Stand (November 2026)
 
 - Spiel läuft im Browser: https://thmenet.github.io/donnerkugel/ (GitHub Pages, Branch `main`, Ordner `/`)
-- 36 Level (Level 1–8 Einführung, 9–36 neu seit 6.11.2026).
+- 40 Level. Ziel von Thomas: mindestens 100 Level.
 - Neigen, Ton (inkl. iPhone-Stummschalter) und Fingersteuerung funktionieren laut Test von Thomas.
 - iOS-App mit Capacitor 8 eingerichtet (Swift Package Manager, keine CocoaPods).
 - App Store Connect: App „Donnerkugel“ angelegt, Bundle-ID `ch.menet.donnerkugel`, Team-ID `JQ76949CP7`, Status „In Vorbereitung zur Übermittlung“.
 - Datenschutz/Support-URL: https://thmenet.github.io/donnerkugel/privacy.html
 - Noch offen: auf dem Mac bauen, auf dem iPhone testen, Archive → Upload → TestFlight, App-Store-Texte, Screenshots (iPhone 6,9"), EU-Händlerstatus (Thomas entscheidet selbst).
 
+## Regeln (wichtig)
+
+- **Zwei Sitzungen arbeiten an diesem Repo** (Windows-PC und Mac). Darum: **vor jeder Arbeit `git pull`**, nach jeder Änderung committen und pushen. `npm run build` bricht ab, wenn GitHub neuere Commits hat.
+- **Vor jedem iPhone-Build** (Xcode ▶ oder Archive): `git pull`, dann `npm run sync`. Sonst fehlen neue Level in der App.
+- **Das Level „Finale“ ist immer das letzte.** Neue Level werden direkt *vor* dem Finale eingefügt. Die Levelprüfung erzwingt das.
+- Levelnamen sind eindeutig. Jedes Level hat einen kurzen Tipp auf Deutsch.
+- Neue Level sollen von Level zu Level etwas schwieriger werden und Abwechslung bringen (nicht nur Varianten derselben Idee).
+
 ## Dateien
 
 - `donnerkugel.html` – **die einzige Quelle des Spiels** (HTML/CSS/JS in einer Datei, ohne `<html>/<head>`, weil sie auch als Claude-Artifact veröffentlicht wird). Nur diese Datei bearbeiten.
-- `scripts/check-levels.mjs` – prüft alle Level (Grösse, Paare, Erreichbarkeit inkl. Schalter/Tore). Läuft automatisch bei `npm run build`.
+- `scripts/check-levels.mjs` – prüft alle Level (Grösse, Paare, Erreichbarkeit inkl. Schalter/Tore, Finale zuletzt, eindeutige Namen). Läuft automatisch bei `npm run build`, einzeln mit `npm run check`.
 - `scripts/build.mjs` – erzeugt daraus `index.html` (GitHub Pages) und `www/index.html` (App).
 - `assets/icon.svg` → `scripts/icon.mjs` rendert App-Symbol, Splash und `apple-touch-icon.png`.
 - `privacy.html` – Datenschutz- und Supportseite.
@@ -42,6 +50,8 @@ Nach Änderungen: `npm run sync`, committen, pushen (GitHub Pages ist nach ~1 Mi
 - Fortschritt und Einstellungen in `localStorage` (Schlüssel `donnerkugel.*`).
 
 ## Ideen für später
+
+- Weitere Level bis mindestens 100 (vor dem Finale einfügen)
 
 - App-Store-Texte (Untertitel, Beschreibung, Suchbegriffe) auf Deutsch, evtl. Englisch
 - Screenshots für das iPhone

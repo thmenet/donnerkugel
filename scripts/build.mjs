@@ -2,6 +2,22 @@
 //   index.html      -> GitHub Pages
 //   www/index.html  -> iOS app (Capacitor)
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { execSync } from "node:child_process";
+
+// Two Claude sessions (Windows PC and Mac) work on this repo. Never build from a stale copy:
+// stop if GitHub has commits this checkout does not have yet.
+if (!process.env.SKIP_PULL_CHECK) {
+  try {
+    execSync("git fetch -q origin main", { stdio: "ignore", timeout: 20000 });
+    const behind = Number(execSync("git rev-list --count HEAD..origin/main").toString().trim());
+    if (behind > 0) {
+      console.error(`\nAbbruch: Auf GitHub gibt es ${behind} neuere Änderung(en). Zuerst "git pull" ausführen, dann nochmals bauen.\n`);
+      process.exit(1);
+    }
+  } catch {
+    console.warn("Hinweis: GitHub nicht erreichbar, konnte nicht prüfen, ob der Stand aktuell ist.");
+  }
+}
 
 const body = readFileSync("donnerkugel.html", "utf8");
 const head =

@@ -57,5 +57,13 @@ LEVELS.forEach((L, i) => {
     if (!ok) fail(i, `Stein "${ch}" in Zeile ${r}, Spalte ${c} ist nicht erreichbar`);
   }
 });
+// Rule: the level called "Finale" is always the last one (new levels go before it)
+const fin = LEVELS.map((L, i) => L.name === "Finale" ? i : -1).filter(i => i >= 0);
+if (fin.length !== 1 || fin[0] !== LEVELS.length - 1) {
+  errors++;
+  console.log(`Das Level "Finale" muss genau einmal vorkommen und das letzte sein (jetzt an Position ${fin.map(i => i + 1).join(", ") || "keine"} von ${LEVELS.length}). Neue Level vor dem Finale einfügen.`);
+}
+const names = LEVELS.map(L => L.name), dup = names.filter((n, i) => names.indexOf(n) !== i);
+if (dup.length) { errors++; console.log(`Doppelte Levelnamen: ${[...new Set(dup)].join(", ")}`); }
 console.log(errors ? `${errors} Fehler` : `Alle ${LEVELS.length} Level in Ordnung`);
 process.exit(errors ? 1 : 0);
