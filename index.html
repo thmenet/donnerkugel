@@ -150,7 +150,9 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
  #  Wand        .  Boden      @  Start
  a–f Farbsteine (je zwei)     _  Abgrund
  ~  Eis         :  Sand       g  Glas (bricht bei Tempo)
- s  Schalter    =  Tor zu     -  Tor offen                 */
+ s  Schalter    =  Tor zu     -  Tor offen
+ x  Sprengkiste (explodiert beim Anstossen, zerstört ringsum Glas, brüchige Mauern, zündet Kisten)
+ w  brüchige Mauer (nur durch Explosion zerstörbar)          */
 const LEVELS = [
   { name:"Erste Schritte", tip:"Roll gegen einen Stein, dann gegen einen zweiten. Gleiche Farbe? Das Paar bleibt offen.", map:[
     "###a###b###","#.........#","#.........#","#.........#","#.........#","#.........#","#....@....#","#.........#",
@@ -265,6 +267,66 @@ const LEVELS = [
     "###a###b###","#.........#","#====-====#","#.........#","#....s....#","#.........#","#....@....#","#.........#","#.___.___.#","#.........#","#.........#","#...c...d.#","#.........#","#c.......d#","###a###b###"]},
   { name:"Mosaik", tip:"Sechs Paare auf engem Raum. Achte auf Eis, Sand und Abgründe.", map:[
     "###a###b###","#g..c.d.eg#","#.~~~~~~~.#","#.........#","#_._:_:_._#","#.........#","#....@....#","#.........#","#.f.:.f...#","#.........#","#_._.___._#","#.........#","#~~~~~~~~~#","#c..d.e...#","###a###b###"]},
+  { name:"Sprengkiste", tip:"Rote Kisten explodieren beim Anstossen und sprengen brüchige Mauern. Halte Abstand!", map:[
+    "###########","#a.......b#","#.........#","####www####","#....x....#","#.........#","#.........#","#....@....#",
+    "#.........#","#....x....#","####www####","#.........#","#.........#","#b.......a#","###########"]},
+  { name:"Kettenreaktion", tip:"Kisten, die nah beieinander stehen, zünden sich gegenseitig.", map:[
+    "###########","#a.b...c.d#","#.........#","#wwwwwwwww#","#..xxxxx..#","#.........#","#....@....#","#.........#",
+    "#..x...x..#","#.wwwwwww.#","#.wa...cw.#","#.wb...dw.#","#.wwwwwww.#","#.........#","###########"]},
+  { name:"Sandsturm", tip:"Sand bremst stark. Die Abgründe sind gut versteckt.", map:[
+    "##a##b##c##","#:::::::::#","#:_:::::_:#","#:::_:_:::#","d:::::::::e","#::_:::_::#","#:::.@.:::#","#::_:::_::#",
+    "e:::::::::d","#:::_:_:::#","#:_:::::_:#","#:::::::::#","#::.....::#","#:::::::::#","##c##a##b##"]},
+  { name:"Splitter", tip:"Glaswände teilen den Raum. Brich nur, was du brauchst.", map:[
+    "###########","#a.g.b.g.c#","#..g...g..#","#ggg.g.ggg#","#.........#","#.ggg.ggg.#","#....@....#","#.ggg.ggg.#",
+    "#.........#","#ggg.g.ggg#","#..g...g..#","#c.g.a.g.b#","#..g...g..#","#.........#","###########"]},
+  { name:"Eisbomben", tip:"Eis und Explosionen: Die Druckwelle schiebt dich weit weg.", map:[
+    "###########","#a.w...w.b#","#..w.c.w..#","#wwx...xww#","#~~~~~~~~~#","#~_~~~~~_~#","#~~~~@~~~~#","#~_~~~~~_~#",
+    "#~~~~~~~~~#","#wwx...xww#","#..w...w..#","#c.w...w.d#","#..w.d.w..#","#b.w...w.a#","###########"]},
+  { name:"Druckwelle", tip:"Die Druckwelle stösst dich zurück. Auf schmalen Brücken heisst das: gerade bleiben!", map:[
+    "###########","#a.......b#","#.........#","#wwwwwwwww#","#____x____#","#____.____#","#____.____#","c....@....d",
+    "#____.____#","#____.____#","#____x____#","#wwwwwwwww#","#..d...c..#","#b.......a#","###########"]},
+  { name:"Glasbläserei", tip:"Ein Gitter aus Glas. Hier hilft nur Schwung.", map:[
+    "#a#b#c#d#e#","#.........#","#g.g.g.g.g#","#.g.g.g.g.#","#g.g.g.g.g#","#.........#","#....@....#","#.........#",
+    "#g.g.g.g.g#","#.g.g.g.g.#","#g.g.g.g.g#","#.........#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Pulverkammer", tip:"Jede Kiste öffnet eine Kammer. Steh nicht daneben, wenn es knallt.", map:[
+    "###########","#a.w.c.w.b#","#..w...w..#","#wwwxwxwww#","#.........#","#wwx...xww#","#dw..@..wd#","#ww.....ww#",
+    "#.........#","#wwwxwxwww#","#..w...w..#","#c.w.a.w.b#","#..w...w..#","#..w...w..#","###########"]},
+  { name:"Eiszapfen", tip:"Glas auf dem Eis. Wer schnell rutscht, bricht durch.", map:[
+    "###a###b###","#~~~~~~~~~#","#~gg~~~gg~#","#~~~~g~~~~#","c~~g~~~g~~d","#~~~~~~~~~#","#~g~.@.~g~#","#~~~~~~~~~#",
+    "d~~g~~~g~~c","#~~~~g~~~~#","#~gg~~~gg~#","#~~~~~~~~~#","#~~~:::~~~#","#~~~~~~~~~#","###b###a###"]},
+  { name:"Halbzeit", tip:"Level 50! Kisten, Sand, Eis und Glas auf einmal.", map:[
+    "#a#b#c#d#e#","#.........#","#wwwwwwwww#","#...x.x...#","#.........#","f:::...:::f","#:::.@.:::#","#.........#",
+    "#~~~~~~~~~#","#~_~~_~~_~#","#~~~~~~~~~#","#ggggggggg#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Zündschnur", tip:"Eine lange Zündschnur aus Kisten. Ein Stoss genügt.", map:[
+    "###########","#a.......b#","#wwwwwwwww#","#........x#","#.c....d.x#","#........x#","#....@...x#","#........x#",
+    "#........x#","#........x#","#.a....b.x#","#........x#","#wwwwwwww##","#c.......d#","###########"]},
+  { name:"Gletscherspalte", tip:"Spalten im Gletscher. Auf Eis rechtzeitig gegensteuern!", map:[
+    "##a#b#c#d##","#~~~~~~~~~#","#~~~~~~~~~#","#___~~~___#","#~~~~~~~~~#","e~~~~@~~~~e","#~~~~~~~~~#","#~___~___~#",
+    "#~~~~~~~~~#","#~~~~~~~~~#","#___~~~___#","#~~~~~~~~~#","#~~~~~~~~~#","#:::::::::#","##d#c#b#a##"]},
+  { name:"Doppelknall", tip:"Ein Schalter und vier Kisten. Was zuerst?", map:[
+    "###a###b###","#.........#","#.........#","###w###w###","#..x...x..#","#.........#","c....@....d","#....s....#",
+    "##=#####=##","#.........#","#.x.....x.#","#wwwwwwwww#","#.........#","#d.b...a.c#","###########"]},
+  { name:"Wüstenfestung", tip:"Eine Festung im Sand. Ihr Tor ist eine Kiste.", map:[
+    "###########","#:::::::::#","#:wwwwwww:#","#:w.....w:#","#:w.a.b.w:#","#:w.....w:#","#:wwwxwww:#","#:::::::::#",
+    "c:::.@.:::d","#:::::::::#","#_:::_:::_#","#:::::::::#","#:d:::::c:#","#:::b:a:::#","###########"]},
+  { name:"Spiegelsaal", tip:"Oben und unten spiegeln sich. Merk dir, wo welche Farbe war.", map:[
+    "#a#b#c#d#e#","#.........#","#.g.g.g.g.#","#.........#","#####=#####","#.........#","f....@....f","#....s....#",
+    "#.........#","#####-#####","#.........#","#.g.g.g.g.#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Lawine", tip:"Die Druckwelle schiebt dich übers Eis. Nicht zu nah an die Kanten!", map:[
+    "###a#b#c###","#.........#","#wwwwwwwww#","#~~~x~x~~~#","#~~~~~~~~~#","#_~~~~~~~_#","#~~~~@~~~~#","#_~~~~~~~_#",
+    "#~~~~~~~~~#","#~~~x~x~~~#","#wwwwwwwww#","#.........#","#.........#","#.........#","###c#b#a###"]},
+  { name:"Geheimgang", tip:"Manche Wände sind brüchig. Eine Kiste findet den Weg.", map:[
+    "#####a#####","#.........#","#.#######.#","#.#b.w.c#.#","#.###x###.#","#.........#","#.#.#@#.#.#","#.#.#.#.#.#",
+    "#...#.#...#","#####.#####","#ww.....ww#","dwx.....xwe","#ww.....ww#","#.a.......#","###d#e#c#b#"]},
+  { name:"Scherbenhaufen", tip:"Doppeltes Glas. Lass die Kisten die Arbeit machen.", map:[
+    "#a#b#c#d#e#","#.........#","#ggggggggg#","#ggggggggg#","#.x..x..x.#","#.........#","#....@....#","#.........#",
+    "#.x..x..x.#","#ggggggggg#","#ggggggggg#","#.........#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Engpass", tip:"Kisten blockieren die Brücke. Jede Explosion stösst dich zurück, bleib in der Spur!", map:[
+    "#####a#####","#.c.....d.#","#____x____#","#____.____#","#____x____#","#____.____#","c....@....d","#____.____#",
+    "#____x____#","#____.____#","#____x____#","#.........#","#.a.....b.#","#.........#","#####b#####"]},
+  { name:"Generalprobe", tip:"Die Generalprobe vor dem Finale: Schalter, Eis, Kisten und Glas.", map:[
+    "#a#b#c#d#e#","#.........#","#wwwwwwwww#","#.x.....x.#","#~~~~~~~~~#","#####=#####","f~~~~~~~~~f","#...s@....#",
+    "#~~~~~~~~~#","#####-#####","#.........#","#.g.g.g.g.#","#:::::::::#","#.........#","#e#d#c#b#a#"]},
   { name:"Finale", tip:"Sechs Paare und alles, was du gelernt hast. Viel Glück!", map:[
     "#a#b#c#d#e#","#.........#","#.ggggggg.#","f.~~~~~~~.f","#.~_~~~_~.#","#.~~~~~~~.#","###=#.#=###","#....@....#",
     "#s.......s#","###-#_#-###","#.........#","#.__:::__.#","#.........#","#..g...g..#","#e#d#c#b#a#"]},
@@ -304,12 +366,12 @@ let ball = {x:0, y:0, vx:0, vy:0, fall:0, fx:0, fy:0, roll:0};
 let stats = {time:0, falls:0};
 let closeTimer = 0, pendingPair = null, won = false, winTimer = 0, onSwitch = false;
 let paused = true, dirty = true, impulseCd = 0, lastThud = 0, clock = 0;
-let particles = [];
+let particles = [], blasts = [], shake = 0;
 let T = 30, dpr = 1;
 
 const WALL = {k:"wall"};
 const tileAt = (c, r) => (r >= 0 && r < ROWS && c >= 0 && c < COLS) ? grid[r][c] : WALL;
-const solid = t => t.k === "wall" || t.k === "glass" || t.k === "stone" || (t.k === "gate" && !t.open);
+const solid = t => t.k === "wall" || t.k === "glass" || t.k === "stone" || t.k === "bomb" || t.k === "brittle" || (t.k === "gate" && !t.open);
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 
 function loadLevel(i){
@@ -331,6 +393,8 @@ function loadLevel(i){
         case "=": t = {k:"gate", open:false}; gates.push(t); break;
         case "-": t = {k:"gate", open:true}; gates.push(t); break;
         case "s": t = {k:"switch", on:false}; switches.push(t); break;
+        case "x": t = {k:"bomb"}; break;
+        case "w": t = {k:"brittle"}; break;
         default:
           if (PAIR[ch]){ t = {k:"stone", pair:ch, state:"closed", anim:0}; stones.push(t); }
           else t = {k:"floor"};
@@ -342,7 +406,7 @@ function loadLevel(i){
   ball = {x:start.x, y:start.y, vx:0, vy:0, fall:0, fx:0, fy:0, roll:0};
   stats = {time:0, falls:0};
   closeTimer = 0; pendingPair = null; won = false; winTimer = 0; onSwitch = false;
-  particles = []; dirty = true;
+  particles = []; blasts = []; shake = 0; dirty = true;
   if (tiltOK) calib = {...raw};
   $("lvlNum").textContent = String(i + 1).padStart(2, "0");
   $("lvlName").textContent = def.name;
@@ -510,6 +574,7 @@ const sfx = {
   fall: () => tone(440, .7, "sine", .12, .18),
   click: () => { tone(1300, .04, "square", .04); tone(700, .05, "square", .04, 0, .06); },
   whoosh: () => noise(.14, .08, 700),
+  boom: () => { noise(.7, .45, 60); tone(110, .6, "sawtooth", .12, .3); tone(55, .8, "sine", .2, .5); buzz(45); },
   win: () => [523, 659, 784, 1047].forEach((n, i) => tone(n, .4, "triangle", .12, 0, i * .1)),
 };
 
@@ -555,7 +620,44 @@ function breakGlass(t){
     particles.push({x:t.c + Math.random(), y:t.r + Math.random(), vx:Math.cos(a) * v + ball.vx * .3, vy:Math.sin(a) * v + ball.vy * .3, life:.8, max:.8, col:"#bdeefc", size:.05 + Math.random() * .05, shard:true});
   }
 }
+// Explosion: destroys glass and brittle walls in the 3x3 around the crate,
+// lights neighbouring crates a moment later (chain) and throws the ball away.
+function explode(t){
+  if (t.k !== "bomb") return;
+  t.k = "floor"; dirty = true; sfx.boom(); shake = Math.min(1, shake + .7);
+  const cx = t.c + .5, cy = t.r + .5;
+  for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++){
+    const n = tileAt(t.c + dc, t.r + dr);
+    if (n === WALL || n === t) continue;
+    if (n.k === "brittle" || n.k === "glass"){
+      const col = n.k === "glass" ? "#bdeefc" : "#7f8f86";
+      n.k = "floor";
+      for (let i = 0; i < 12; i++){
+        const a = Math.random() * TAU, v = 1 + Math.random() * 3;
+        particles.push({x:n.c + Math.random(), y:n.r + Math.random(), vx:Math.cos(a) * v, vy:Math.sin(a) * v, life:.8, max:.8, col, size:.05 + Math.random() * .06, shard:true});
+      }
+    } else if (n.k === "bomb" && !blasts.some(b => b.t === n)){
+      blasts.push({t:n, timer:.18});
+    }
+  }
+  for (let i = 0; i < 40; i++){
+    const a = Math.random() * TAU, v = 1.5 + Math.random() * 4.5;
+    particles.push({x:cx, y:cy, vx:Math.cos(a) * v, vy:Math.sin(a) * v, life:.6, max:.6, col:i % 3 ? "#ffb347" : "#fff1b8", size:.06 + Math.random() * .07});
+  }
+  for (let i = 0; i < 10; i++){
+    const a = Math.random() * TAU, v = .4 + Math.random() * 1;
+    particles.push({x:cx, y:cy, vx:Math.cos(a) * v, vy:Math.sin(a) * v, life:1.1, max:1.1, col:"rgba(120,120,110,.6)", size:.18 + Math.random() * .12});
+  }
+  if (ball.fall <= 0){
+    const dx = ball.x - cx, dy = ball.y - cy, d = Math.hypot(dx, dy);
+    if (d < 1.9){
+      const f = 8 * (1 - d / 1.9) + 1.5, nx = d > .01 ? dx / d : 0, ny = d > .01 ? dy / d : -1;
+      ball.vx += nx * f; ball.vy += ny * f;
+    }
+  }
+}
 function onHit(t, impact){
+  if (t.k === "bomb"){ if (impact > .35) explode(t); return; }
   if (t.k === "stone"){ if (impact > .5) hitStone(t); else if (impact > .2) sfx.thud(impact); return; }
   if (t.k === "glass" && impact > 1.4){
     t.crack = Math.min(1, t.crack + impact / GLASS_BREAK * .4);
@@ -602,6 +704,13 @@ function update(dt){
   for (const s of stones) s.anim = Math.max(0, s.anim - dt * 2.5);
   impulseCd -= dt;
   for (const g of gates) if (g.pendingClose && !overlaps(g)){ g.open = false; g.pendingClose = false; dirty = true; }
+  if (blasts.length){
+    for (const b of blasts) b.timer -= dt;
+    const due = blasts.filter(b => b.timer <= 0);
+    blasts = blasts.filter(b => b.timer > 0);
+    due.forEach(b => explode(b.t));
+  }
+  shake = Math.max(0, shake - dt * 2.5);
 
   if (ball.fall > 0){
     ball.fall -= dt;
@@ -707,7 +816,7 @@ function drawGround(g, t){
       g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(c + .04, r + .04, .92, .1); g.fillRect(c + .04, r + .86, .92, .1);
       break;
     }
-    case "wall": case "stone": break;
+    case "wall": case "stone": case "brittle": break;
     default: drawFloor(g, t);
   }
 }
@@ -732,6 +841,25 @@ function drawTop(g, t){
         g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox + Math.cos(a) * L, oy + Math.sin(a) * L); g.stroke();
       }
     }
+  } else if (t.k === "brittle"){
+    // lighter, cracked masonry
+    g.fillStyle = "#3d4a44"; g.fillRect(c, r, 1, 1);
+    g.fillStyle = "#4b5a52"; g.fillRect(c + .06, r + .06, .4, .4); g.fillRect(c + .54, r + .06, .4, .4);
+    g.fillRect(c + .06, r + .54, .4, .4); g.fillRect(c + .54, r + .54, .4, .4);
+    g.strokeStyle = "#1c2421"; g.lineWidth = .04;
+    g.beginPath(); g.moveTo(c + .15, r + .1); g.lineTo(c + .42, r + .48); g.lineTo(c + .3, r + .9);
+    g.moveTo(c + .42, r + .48); g.lineTo(c + .85, r + .62); g.stroke();
+  } else if (t.k === "bomb"){
+    // explosive crate: red box with warning stripes
+    g.fillStyle = "#5a1d17"; g.fillRect(c + .08, r + .08, .84, .84);
+    g.fillStyle = "#b8352a"; g.fillRect(c + .12, r + .12, .76, .76);
+    g.save(); g.beginPath(); g.rect(c + .12, r + .38, .76, .24); g.clip();
+    g.fillStyle = "#f2c045"; g.fillRect(c + .12, r + .38, .76, .24);
+    g.fillStyle = "#1b1410";
+    for (let i = -1; i < 5; i++){ g.beginPath(); g.moveTo(c + .12 + i * .2, r + .62); g.lineTo(c + .22 + i * .2, r + .38); g.lineTo(c + .32 + i * .2, r + .38); g.lineTo(c + .22 + i * .2, r + .62); g.closePath(); g.fill(); }
+    g.restore();
+    g.fillStyle = "rgba(255,255,255,.22)"; g.fillRect(c + .12, r + .12, .76, .05);
+    g.strokeStyle = "#2b0d0a"; g.lineWidth = .04; g.strokeRect(c + .1, r + .1, .8, .8);
   } else if (t.k === "gate" && !t.open){
     g.fillStyle = "#11181a"; g.fillRect(c + .03, r + .03, .94, .94);
     g.fillStyle = "#8f9d9e";
@@ -747,7 +875,8 @@ function drawStatic(){
   for (const row of grid) for (const t of row) drawGround(sctx, t);
   sctx.fillStyle = "rgba(0,0,0,.38)";
   for (const row of grid) for (const t of row){
-    if (t.k === "wall" || t.k === "stone" || t.k === "glass" || (t.k === "gate" && !t.open)) sctx.fillRect(t.c + .1, t.r + .12, 1, 1);
+    if (t.k === "wall" || t.k === "stone" || t.k === "glass" || t.k === "brittle" || (t.k === "gate" && !t.open)) sctx.fillRect(t.c + .1, t.r + .12, 1, 1);
+    else if (t.k === "bomb") sctx.fillRect(t.c + .16, t.r + .2, .84, .84);
   }
   for (const row of grid) for (const t of row) drawTop(sctx, t);
 }
@@ -836,10 +965,12 @@ function drawParticles(){
 }
 function render(){
   if (dirty){ drawStatic(); dirty = false; }
+  const sx = shake && !reduceMotion ? (Math.random() - .5) * shake * .25 * T * dpr : 0;
+  const sy = shake && !reduceMotion ? (Math.random() - .5) * shake * .25 * T * dpr : 0;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, cv.width, cv.height);
-  ctx.drawImage(st, 0, 0);
-  ctx.setTransform(dpr * T, 0, 0, dpr * T, 0, 0);
+  ctx.drawImage(st, sx, sy);
+  ctx.setTransform(dpr * T, 0, 0, dpr * T, sx, sy);
   for (const s of stones) drawStone(s);
   drawParticles();
   drawBall();

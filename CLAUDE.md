@@ -5,12 +5,22 @@ Murmel-Rätselspiel fürs iPhone, inspiriert von Mechaniken klassischer Murmelsp
 ## Stand (November 2026)
 
 - Spiel läuft im Browser: https://thmenet.github.io/donnerkugel/ (GitHub Pages, Branch `main`, Ordner `/`)
-- 40 Level. Ziel von Thomas: mindestens 100 Level.
+- 60 Level (Paket 1 vom PC: Level 40–59 mit Explosionen, Finale = letztes Level). Ziel von Thomas: mindestens 100 Level.
 - Neigen, Ton (inkl. iPhone-Stummschalter) und Fingersteuerung funktionieren laut Test von Thomas.
 - iOS-App mit Capacitor 8 eingerichtet (Swift Package Manager, keine CocoaPods).
 - App Store Connect: App „Donnerkugel“ angelegt, Bundle-ID `ch.menet.donnerkugel`, Team-ID `JQ76949CP7`, Status „In Vorbereitung zur Übermittlung“.
 - Datenschutz/Support-URL: https://thmenet.github.io/donnerkugel/privacy.html
 - Noch offen: auf dem Mac bauen, auf dem iPhone testen, Archive → Upload → TestFlight, App-Store-Texte, Screenshots (iPhone 6,9"), EU-Händlerstatus (Thomas entscheidet selbst).
+
+## Arbeitsteilung (von Thomas festgelegt, 7.11.2026)
+
+| Wo | Aufgabe |
+|---|---|
+| **Windows-PC** | Spielentwicklung: neue Level in **Paketen zu 20**, neue Spielelemente, Fehler im Spiel. Nach jedem Paket: committen, pushen, Thomas testet im Browser. |
+| **Mac** | **Veröffentlichung im App Store**: `git pull`, `npm run sync`, Xcode-Build, TestFlight, App-Store-Texte, Screenshots, Einreichung. Am Spiel selbst (Level, Spielcode) wird auf dem Mac nichts geändert. |
+
+- **Koordination:** Jede Sitzung sagt Thomas am Ende einer Arbeit klar, was die andere jetzt tun muss (z. B. PC: „Neues Levelpaket ist auf GitHub. Auf dem Mac: git pull, npm run sync, neuen Build hochladen.“ / Mac: „Build X ist bei TestFlight.“).
+- **Levelpakete steigen in der Schwierigkeit** und mischen die Elemente: Sand, Glas, Eis, Explosionen (Sprengkisten, brüchige Mauern), Kniffelaufgaben (Ketten, Reihenfolgen, Schalter-Rätsel). Ziel: mindestens 100 Level.
 
 ## Regeln (wichtig)
 
@@ -42,7 +52,7 @@ Nach Änderungen: `npm run sync`, committen, pushen (GitHub Pages ist nach ~1 Mi
 
 ## Spiel-Technik (Kurzüberblick)
 
-- Raster 11×15 Felder, Level als Textkarten im Array `LEVELS`: `#` Wand, `.` Boden, `@` Start, `a–f` Farbsteine (je genau zwei), `_` Abgrund, `~` Eis, `:` Sand, `g` Glas (bricht bei Tempo), `s` Schalter, `=` Tor zu, `-` Tor offen.
+- Raster 11×15 Felder, Level als Textkarten im Array `LEVELS`: `#` Wand, `.` Boden, `@` Start, `a–f` Farbsteine (je genau zwei), `_` Abgrund, `~` Eis, `:` Sand, `g` Glas (bricht bei Tempo), `s` Schalter, `=` Tor zu, `-` Tor offen, `x` Sprengkiste (explodiert beim Anstossen: zerstört im 3×3-Feld Glas und brüchige Mauern, zündet Nachbarkisten, schleudert die Kugel weg), `w` brüchige Mauer (nur durch Explosion zerstörbar).
 - Physik in Feld-Einheiten (`ACC`, `MAXV`, `BOUNCE`, `IMPULSE`, `GLASS_BREAK`, `TILT_RANGE` oben im Skript).
 - Neigung über `deviceorientation` (iOS: `DeviceOrientationEvent.requestPermission()` beim Tippen), wird beim Levelstart kalibriert.
 - Haptik: in der App über `window.Capacitor.Plugins.Haptics` (Plugin `@capacitor/haptics`), im Browser `navigator.vibrate`.
