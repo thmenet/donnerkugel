@@ -55,6 +55,7 @@ Nach Änderungen: `npm run sync`, committen, pushen (GitHub Pages ist nach ~1 Mi
 - Raster 11×15 Felder, Level als Textkarten im Array `LEVELS`: `#` Wand, `.` Boden, `@` Start, `a–f` Farbsteine (je genau zwei), `_` Abgrund, `~` Eis, `:` Sand, `g` Glas (bricht bei Tempo), `s` Schalter, `=` Tor zu, `-` Tor offen, `x` Sprengkiste (explodiert beim Anstossen: zerstört im 3×3-Feld Glas und brüchige Mauern, zündet Nachbarkisten, schleudert die Kugel weg), `w` brüchige Mauer (nur durch Explosion zerstörbar).
 - Physik in Feld-Einheiten (`ACC`, `MAXV`, `BOUNCE`, `IMPULSE`, `GLASS_BREAK`, `TILT_RANGE` oben im Skript).
 - Neigung über `deviceorientation` (iOS: `DeviceOrientationEvent.requestPermission()` beim Tippen), wird beim Levelstart kalibriert.
+- Fingersteuerung (Nov. 2026): Joystick gibt eine **Zielgeschwindigkeit** vor (Daumen zur Mitte = Kugel bremst), Empfindlichkeit Fein/Mittel/Schnell im Menü (`SENS`, Einstellung `sens`). Zweiter Finger: halten = Bremse, kurz tippen = Schubs. Im Neigen-Modus: Finger halten = Bremse.
 - Haptik: in der App über `window.Capacitor.Plugins.Haptics` (Plugin `@capacitor/haptics`), im Browser `navigator.vibrate`.
 - Ton: Web Audio, `navigator.audioSession.type = "playback"`, Freischaltung bei `touchend`/`click`.
 - Fortschritt und Einstellungen in `localStorage` (Schlüssel `donnerkugel.*`).

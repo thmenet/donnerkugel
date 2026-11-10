@@ -42,7 +42,7 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 #stage{flex:1;min-height:0;position:relative;display:grid;place-items:center;touch-action:none}
 #cv{display:block;border-radius:10px;box-shadow:0 0 0 1px var(--line),0 24px 60px rgba(0,0,0,.55)}
 #hint{text-align:center;color:var(--muted);font-size:13px;min-height:18px}
-#joy{position:absolute;left:0;top:0;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:2px solid rgba(217,167,82,.45);pointer-events:none}
+#joy{position:absolute;left:0;top:0;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;border:2px solid rgba(217,167,82,.45);pointer-events:none}
 #knob{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(217,167,82,.55)}
 #toast{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:88%;box-sizing:border-box;padding:10px 14px;border-radius:12px;background:rgba(21,30,32,.94);border:1px solid var(--line);font-size:14px;line-height:1.35;text-align:center;transition:opacity .35s;pointer-events:none}
 #toast.fade{opacity:0}
@@ -65,6 +65,8 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 .group{display:flex;flex-direction:column;gap:10px}
 .label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:14px;background:var(--hall);border:1px solid var(--line)}
+.seg.three{grid-template-columns:1fr 1fr 1fr}
+#brake{position:absolute;left:0;top:0;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;border:2px solid rgba(120,190,255,.6);background:rgba(120,190,255,.12);pointer-events:none}
 .seg button{height:42px;border:0;border-radius:10px;background:transparent;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
 .levels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
@@ -93,6 +95,7 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
   <main id="stage">
     <canvas id="cv"></canvas>
     <div id="joy" hidden><div id="knob"></div></div>
+    <div id="brake" hidden></div>
     <div id="toast" hidden></div>
   </main>
   <footer id="hint">Finger ziehen zum Rollen · Schnell wischen gibt Schwung</footer>
@@ -113,6 +116,11 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
       <div class="seg" role="group" aria-label="Steuerung">
         <button id="modeTilt" aria-pressed="true">Handy neigen</button>
         <button id="modeTouch" aria-pressed="false">Finger</button>
+      </div>
+      <div class="seg three" id="sensBox" role="group" aria-label="Empfindlichkeit Finger">
+        <button id="sens_fein">Fein</button>
+        <button id="sens_mittel">Mittel</button>
+        <button id="sens_schnell">Schnell</button>
       </div>
       <button class="ghost" id="calBtn">Neigung kalibrieren</button>
       <p class="note" id="ctrlNote">Halte das Handy so, wie du spielen willst. Diese Haltung gilt als „flach“. Wischen gibt der Kugel einen Schubs.</p>
@@ -332,7 +340,9 @@ const LEVELS = [
 ];
 
 const COLS = 11, ROWS = 15, R = 0.3;
-const ACC = 17, MAXV = 10, BOUNCE = 0.42, IMPULSE = 6, GLASS_BREAK = 4.2, TILT_RANGE = 18, JOY_R = 55;
+const ACC = 17, MAXV = 10, BOUNCE = 0.42, IMPULSE = 6, GLASS_BREAK = 4.2, TILT_RANGE = 18, JOY_R = 70;
+// Finger control: the stick sets a target speed (centre = brake). exp = response curve, vmax = top speed (tiles/s)
+const SENS = {fein:{exp:1.8, vmax:3.4}, mittel:{exp:1.5, vmax:4.8}, schnell:{exp:1.15, vmax:6.5}};
 const PAIR = {
   a:{col:"#f2b33d", sym:"circle",  note:523},
   b:{col:"#3fd0d4", sym:"tri",     note:587},
@@ -351,7 +361,7 @@ const store = {
   set(k, v){ try{ localStorage.setItem("donnerkugel." + k, JSON.stringify(v)); }catch(e){} },
 };
 const progress = Object.assign({unlocked:1, best:{}, last:0}, store.get("progress", {}));
-const settings = Object.assign({mode:"tilt", sound:true}, store.get("settings", {}));
+const settings = Object.assign({mode:"tilt", sound:true, sens:"fein"}, store.get("settings", {}));
 
 /* ---------- DOM ---------- */
 const $ = id => document.getElementById(id);
@@ -364,7 +374,7 @@ let cur = 0, grid = [], stones = [], gates = [], switches = [], start = {x:5.5, 
 let ball = {x:0, y:0, vx:0, vy:0, fall:0, fx:0, fy:0, roll:0};
 let stats = {time:0, falls:0};
 let closeTimer = 0, pendingPair = null, won = false, winTimer = 0, onSwitch = false;
-let paused = true, dirty = true, impulseCd = 0, lastThud = 0, clock = 0;
+let paused = true, dirty = true, impulseCd = 0, boostT = 0, braking = false, lastThud = 0, clock = 0;
 let particles = [], blasts = [], shake = 0;
 let T = 30, dpr = 1;
 
@@ -414,7 +424,7 @@ function loadLevel(i){
 
 /* ---------- Input ---------- */
 let tiltOK = false, tiltListening = false, raw = {x:0, y:0}, calib = null;
-let joy = {x:0, y:0}, ptr = null;
+let joy = {x:0, y:0, on:false}, ptr = null, ptr2 = null;
 const keys = new Set();
 
 function screenAngle(){
@@ -455,7 +465,6 @@ function getInput(){
     x = (raw.x - calib.x) / TILT_RANGE;
     y = (raw.y - calib.y) / TILT_RANGE;
   }
-  x += joy.x; y += joy.y;
   if (keys.has("ArrowLeft") || keys.has("a")) x -= 1;
   if (keys.has("ArrowRight") || keys.has("d")) x += 1;
   if (keys.has("ArrowUp") || keys.has("w")) y -= 1;
@@ -469,38 +478,65 @@ function getInput(){
 function impulse(dx, dy){
   if (paused || ball.fall > 0 || impulseCd > 0) return;
   ball.vx += dx * IMPULSE; ball.vy += dy * IMPULSE;
-  impulseCd = 0.35;
+  impulseCd = 0.35; boostT = 0.6;
   sfx.whoosh();
   for (let i = 0; i < 8; i++){
     particles.push({x:ball.x, y:ball.y, vx:-dx * (1 + Math.random() * 2) + (Math.random() - .5), vy:-dy * (1 + Math.random() * 2) + (Math.random() - .5), life:.35, max:.35, col:"#d9a752", size:.05});
   }
 }
 
+function placeAt(el, e){
+  const rc = stage.getBoundingClientRect();
+  el.style.left = (e.clientX - rc.left) + "px"; el.style.top = (e.clientY - rc.top) + "px";
+}
+function stickDir(){
+  let dx = joy.x, dy = joy.y;
+  if (!dx && !dy){ dx = ball.vx; dy = ball.vy; }
+  const m = Math.hypot(dx, dy);
+  return m > 0 ? [dx / m, dy / m] : null;
+}
 stage.addEventListener("pointerdown", e => {
   ensureAudio();
   if (paused) return;
-  ptr = {id:e.pointerId, x0:e.clientX, y0:e.clientY, t0:performance.now()};
   try{ stage.setPointerCapture(e.pointerId); }catch(_){}
+  if (ptr && !ptr2 && !tiltActive()){
+    // second finger = brake while held, short tap = push in stick direction
+    ptr2 = {id:e.pointerId, x0:e.clientX, y0:e.clientY, t0:performance.now()};
+    placeAt($("brake"), e); $("brake").hidden = false;
+    return;
+  }
+  if (ptr) return;
+  ptr = {id:e.pointerId, x0:e.clientX, y0:e.clientY, t0:performance.now(), moved:false};
   if (!tiltActive()){
-    const rc = stage.getBoundingClientRect();
     const j = $("joy");
-    j.style.left = (e.clientX - rc.left) + "px"; j.style.top = (e.clientY - rc.top) + "px";
+    placeAt(j, e);
     $("knob").style.transform = "translate(0,0)";
-    j.hidden = false;
+    j.hidden = false; joy = {x:0, y:0, on:true};
   }
 });
 stage.addEventListener("pointermove", e => {
-  if (!ptr || e.pointerId !== ptr.id || tiltActive()) return;
+  if (!ptr || e.pointerId !== ptr.id) return;
   const dx = e.clientX - ptr.x0, dy = e.clientY - ptr.y0, L = Math.hypot(dx, dy);
-  const s = L > 0 ? Math.min(1, L / JOY_R) / L : 0;
-  joy = {x:dx * s, y:dy * s};
-  $("knob").style.transform = `translate(${joy.x * JOY_R}px,${joy.y * JOY_R}px)`;
+  if (L > 14) ptr.moved = true;
+  if (tiltActive()) return;
+  if (L === 0){ joy = {x:0, y:0, on:true}; $("knob").style.transform = "translate(0,0)"; return; }
+  const n = Math.min(1, L / JOY_R), S = SENS[settings.sens] || SENS.mittel;
+  const v = Math.pow(Math.max(0, (n - .1) / .9), S.exp);
+  joy = {x:dx / L * v, y:dy / L * v, on:true};
+  $("knob").style.transform = `translate(${dx / L * n * JOY_R}px,${dy / L * n * JOY_R}px)`;
 });
 function endPtr(e){
+  if (ptr2 && e.pointerId === ptr2.id){
+    const dt = performance.now() - ptr2.t0, d = Math.hypot(e.clientX - ptr2.x0, e.clientY - ptr2.y0);
+    if (dt < 220 && d < 20){ const dir = stickDir(); if (dir) impulse(dir[0], dir[1]); }
+    ptr2 = null; $("brake").hidden = true;
+    return;
+  }
   if (!ptr || e.pointerId !== ptr.id) return;
   const dt = performance.now() - ptr.t0, dx = e.clientX - ptr.x0, dy = e.clientY - ptr.y0, d = Math.hypot(dx, dy);
-  if (dt < 260 && d > 28) impulse(dx / d, dy / d);
-  joy = {x:0, y:0}; ptr = null; $("joy").hidden = true;
+  if (dt < 220 && d > 40) impulse(dx / d, dy / d);
+  joy = {x:0, y:0, on:false}; ptr = null; $("joy").hidden = true;
+  if (ptr2){ ptr2 = null; $("brake").hidden = true; }
 }
 stage.addEventListener("pointerup", endPtr);
 stage.addEventListener("pointercancel", endPtr);
@@ -726,7 +762,22 @@ function update(dt){
   let acc = ACC, k = 1.5;
   if (g0.k === "ice"){ acc *= .45; k = .18; }
   else if (g0.k === "sand"){ k = 5.5; }
-  ball.vx += inp.x * acc * dt; ball.vy += inp.y * acc * dt;
+  let ax = inp.x * acc, ay = inp.y * acc;
+  boostT -= dt;
+  if (joy.on){
+    const S = SENS[settings.sens] || SENS.mittel;
+    if (boostT > 0){ ax += joy.x * acc; ay += joy.y * acc; }   // right after a push: don't brake it away
+    else {
+      let cx = (joy.x * S.vmax - ball.vx) * 5, cy = (joy.y * S.vmax - ball.vy) * 5;
+      const cm = Math.hypot(cx, cy), lim = acc * 1.1;
+      if (cm > lim){ cx *= lim / cm; cy *= lim / cm; }
+      ax += cx; ay += cy;
+    }
+  }
+  // brake: second finger (finger mode) or holding one finger still (tilt mode)
+  braking = !!ptr2 || (tiltActive() && !!ptr && !ptr.moved && performance.now() - ptr.t0 > 180);
+  if (braking) k += g0.k === "ice" ? 1.2 : 6;
+  ball.vx += ax * dt; ball.vy += ay * dt;
   const f = Math.exp(-k * dt); ball.vx *= f; ball.vy *= f;
   const sp = Math.hypot(ball.vx, ball.vy);
   if (sp > MAXV){ ball.vx *= MAXV / sp; ball.vy *= MAXV / sp; }
@@ -946,6 +997,10 @@ function drawBall(){
   ctx.moveTo(x + Math.cos(ang) * off - Math.sin(ang) * rad, y + Math.sin(ang) * off + Math.cos(ang) * rad);
   ctx.lineTo(x + Math.cos(ang) * off + Math.sin(ang) * rad, y + Math.sin(ang) * off - Math.cos(ang) * rad);
   ctx.stroke(); ctx.restore();
+  if (braking && ball.fall <= 0){
+    ctx.strokeStyle = "rgba(120,190,255,.8)"; ctx.lineWidth = .04;
+    ctx.beginPath(); ctx.arc(x, y, rad + .08, 0, TAU); ctx.stroke();
+  }
   ctx.fillStyle = "rgba(255,255,255,.75)";
   ctx.beginPath(); ctx.ellipse(x - rad * .38, y - rad * .42, rad * .2, rad * .13, -.6, 0, TAU); ctx.fill();
 }
@@ -987,16 +1042,18 @@ function updHud(){
 }
 function updateHint(){
   let h;
-  if (tiltActive()) h = "Handy neigen · Wischen gibt Schwung";
+  if (tiltActive()) h = "Handy neigen · Finger halten bremst · Wischen gibt Schwung";
   else if (finePointer) h = "Pfeiltasten oder Maus ziehen · Leertaste gibt Schwung";
-  else h = "Finger ziehen zum Rollen · Schnell wischen gibt Schwung";
+  else h = "Daumen ziehen · Zweiter Finger: halten bremst, tippen gibt Schwung";
   $("hint").textContent = h;
   $("modeTilt").setAttribute("aria-pressed", String(settings.mode === "tilt"));
   $("modeTouch").setAttribute("aria-pressed", String(settings.mode === "touch"));
   $("calBtn").hidden = settings.mode !== "tilt";
+  $("sensBox").hidden = settings.mode === "tilt";
+  for (const k of Object.keys(SENS)) $("sens_" + k).setAttribute("aria-pressed", String(settings.sens === k));
   $("ctrlNote").textContent = settings.mode === "tilt"
-    ? "Halte das Handy so, wie du spielen willst. Diese Haltung gilt als „flach“. Wischen gibt der Kugel einen Schubs."
-    : "Leg den Finger irgendwo hin und zieh in die Richtung, in die die Kugel rollen soll. Schnell wischen gibt einen Schubs.";
+    ? "Halte das Handy so, wie du spielen willst. Diese Haltung gilt als „flach“. Finger auflegen und halten bremst, Wischen gibt einen Schubs."
+    : "Daumen auflegen und ziehen wie mit einem Joystick: wenig ziehen = langsam. Daumen zurück zur Mitte = Kugel bremst. Zweiter Finger: halten = Vollbremsung, kurz tippen = Schubs.";
   $("soundBtn").textContent = "Ton: " + (settings.sound ? "an" : "aus");
 }
 let toastTimer = 0;
@@ -1033,7 +1090,7 @@ function begin(){
   if (settings.mode === "tilt") enableTilt();
 }
 function openMenu(){
-  paused = true; joy = {x:0, y:0}; $("joy").hidden = true;
+  paused = true; joy = {x:0, y:0, on:false}; ptr = ptr2 = null; $("joy").hidden = true; $("brake").hidden = true;
   $("playBtn").textContent = started ? "Weiterspielen" : "Spielen";
   renderLevels(); updateHint();
   $("menu").hidden = false;
@@ -1064,6 +1121,7 @@ $("menuBtn").addEventListener("click", openMenu);
 $("playBtn").addEventListener("click", () => { begin(); if (!started) loadLevel(Math.min(progress.last, progress.unlocked - 1)); resume(); });
 $("modeTilt").addEventListener("click", () => { settings.mode = "tilt"; store.set("settings", settings); enableTilt(); updateHint(); });
 $("modeTouch").addEventListener("click", () => { settings.mode = "touch"; store.set("settings", settings); updateHint(); });
+for (const k of Object.keys(SENS)) $("sens_" + k).addEventListener("click", () => { settings.sens = k; store.set("settings", settings); updateHint(); });
 $("calBtn").addEventListener("click", () => {
   enableTilt();
   if (tiltOK){ calib = {...raw}; toast("Kalibriert. Diese Haltung gilt jetzt als flach."); }
