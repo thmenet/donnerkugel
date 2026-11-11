@@ -70,10 +70,16 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 #brake{position:absolute;left:0;top:0;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;border:2px solid rgba(120,190,255,.6);background:rgba(120,190,255,.12);pointer-events:none}
 .seg button{height:42px;border:0;border-radius:10px;background:transparent;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
-.levels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:4px;border-radius:14px;background:var(--hall);border:1px solid var(--line)}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;min-width:76px;height:40px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:600;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;padding:0 8px}
+.tabs button small{font-size:10px;font-weight:500;opacity:.8}
+.tabs button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.tabs button:disabled{opacity:.35;cursor:default}
 .levels button{aspect-ratio:1;max-width:100%;border:1px solid var(--line);border-radius:10px;background:var(--hall);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
-.levels button b{font-family:var(--font-display);font-size:16px;font-weight:800}
-.levels button small{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.levels button b{font-family:var(--font-display);font-size:18px;font-weight:800}
+.levels button small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .levels button.done{border-color:rgba(217,167,82,.35)}
 .levels button.cur{border-color:var(--brass)}
 .levels button:disabled{opacity:.35;cursor:default}
@@ -128,6 +134,7 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
     </div>
     <div class="group">
       <div class="label">Level</div>
+      <div class="tabs" id="lvlTabs" role="group" aria-label="Levelseiten"></div>
       <div class="levels" id="levels"></div>
     </div>
     <button class="ghost" id="soundBtn">Ton: an</button>
@@ -198,9 +205,9 @@ const LEVELS = [
   { name:"Brücken", tip:"Schmale Brücken über dem Abgrund. Langsam ist sicher.", map:[
     "###########","#a...#...b#","#....#....#","#__.___.__#","#__.___.__#","#....@....#","#.___.___.#","#.___.___.#",
     "c.........d","#___._.___#","#___._.___#","#.........#","#.c.....d.#","#.........#","###b###a###"]},
-  { name:"Doppeltor", tip:"Ein Schalter, vier Tore. Er dreht alle Tore um: Was offen ist, geht zu.", map:[
-    "###a###b###","#.........#","#.........#","####=#=####","#.........#","c....@....d","#.........#","#........s#",
-    "#.........#","####-#-####","#.........#","d.........c","#.........#","#.........#","###b###a###"]},
+  { name:"Doppeltor", tip:"Ein Schalter dreht alle Tore um. Jede Ecke hat zwei Türen, aber nie beide offen. Merk dir die Farbe, bevor du schaltest.", map:[
+    "###########","#a..#.#..b#","#...#.#...#","#...=.-...#","#...#.#...#","##=##.##-##","#.........#","#....@....#",
+    "#s........#","#.........#","##=##.##-##","#...#.#...#","#...=.-...#","#b..#.#..a#","###########"]},
   { name:"Glashaus", tip:"Die Steine stecken in Glaskästen. Mit Schwung hinein!", map:[
     "###########","#.........#","#.ggg.ggg.#","#.gag.gbg.#","#.ggg.ggg.#","#.........#","#....@....#","#.........#",
     "#.ggg.ggg.#","#.gcg.gdg.#","#.ggg.ggg.#","#.........#","#.........#","#.........#","###b#c#a#d#"]},
@@ -264,9 +271,9 @@ const LEVELS = [
   { name:"Irrweg", tip:"Ein Labyrinth mit Sackgassen. Unten wartet Sand.", map:[
     "#####a#####","#.....#...#","#.###.#.#.#","#.#.a.#.#.#","#.#.###.#.#","b.#.....#.c","#.#####.#.#","#...@...#.#",
     "#######.#.#","#.......#.#","#.#######.#","#.........#","#:::_:_:::#","#d.c...b.d#","###########"]},
-  { name:"Meisterprüfung", tip:"Eis, Glas, Tore und zwei Schalter. Zeig, was du kannst!", map:[
-    "#a#b#c#d#e#","#~~~~~~~~~#","#ggggggggg#","#.........#","#____=____#","#s........#","#~~~~@~~~~#","#~~_~~~_~~#",
-    "#~~~~~~~~~#","####-######","#.........#","#.:::s:::.#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Meisterprüfung", tip:"Oben und unten sind nie gleichzeitig offen. Jedes Paar liegt auf beiden Seiten. Glas braucht Schwung.", map:[
+    "###########","#a.~~~~~.b#","#..~~_~~..#","###g###g###","#c:::#:::d#","#.:::=:::.#","#####.#####","#s...@...s#",
+    "#####-#####","#d~~~~~~~c#","#.~_~~~_~.#","#.~~~~~~~.#","#gg##=##gg#","#b.......a#","###########"]},
   { name:"Glasgarten", tip:"Glas überall, dazwischen Abgründe. Erst Schwung holen, dann zuschlagen.", map:[
     "###a###b###","#g.......g#","#.c_.d_.e.#","#.........#","#_g_g_g_g_#","#.........#","#....@....#","#.........#","#_g_g_g_g_#","#.........#","#.........#","#.........#","#.c_.d_.e.#","#g.......g#","###a###b###"]},
   { name:"Kanäle", tip:"Eisbahnen und Sand wechseln sich ab. Auf dem Eis rutschst du weit.", map:[
@@ -293,18 +300,18 @@ const LEVELS = [
   { name:"Druckwelle", tip:"Die Druckwelle stösst dich zurück. Auf schmalen Brücken heisst das: gerade bleiben!", map:[
     "###########","#a.......b#","#.........#","#wwwwwwwww#","#____x____#","#____.____#","#____.____#","c....@....d",
     "#____.____#","#____.____#","#____x____#","#wwwwwwwww#","#..d...c..#","#b.......a#","###########"]},
-  { name:"Glasbläserei", tip:"Ein Gitter aus Glas. Hier hilft nur Schwung.", map:[
-    "#a#b#c#d#e#","#.........#","#g.g.g.g.g#","#.g.g.g.g.#","#g.g.g.g.g#","#.........#","#....@....#","#.........#",
-    "#g.g.g.g.g#","#.g.g.g.g.#","#g.g.g.g.g#","#.........#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Glasbläserei", tip:"Schräge Glaswände überall. Nimm Anlauf oder lass eine Kiste den Weg freisprengen.", map:[
+    "###########","#.ag...gb.#","#.g...g...#","#g...d...g#","#...g...x.#","#..g...g..#","#.g...g...#","#c...g@..c#",
+    "#...g...g.#","#..g...g..#","#.x...g...#","#g...d...g#","#...g...g.#","#.bg...ga.#","###########"]},
   { name:"Pulverkammer", tip:"Jede Kiste öffnet eine Kammer. Steh nicht daneben, wenn es knallt.", map:[
     "###########","#a.w.c.w.b#","#..w...w..#","#wwwxwxwww#","#.........#","#wwx...xww#","#dw..@..wd#","#ww.....ww#",
     "#.........#","#wwwxwxwww#","#..w...w..#","#c.w.a.w.b#","#..w...w..#","#..w...w..#","###########"]},
   { name:"Eiszapfen", tip:"Glas auf dem Eis. Wer schnell rutscht, bricht durch.", map:[
     "###a###b###","#~~~~~~~~~#","#~gg~~~gg~#","#~~~~g~~~~#","c~~g~~~g~~d","#~~~~~~~~~#","#~g~.@.~g~#","#~~~~~~~~~#",
     "d~~g~~~g~~c","#~~~~g~~~~#","#~gg~~~gg~#","#~~~~~~~~~#","#~~~:::~~~#","#~~~~~~~~~#","###b###a###"]},
-  { name:"Halbzeit", tip:"Level 50! Kisten, Sand, Eis und Glas auf einmal.", map:[
-    "#a#b#c#d#e#","#.........#","#wwwwwwwww#","#...x.x...#","#.........#","f:::...:::f","#:::.@.:::#","#.........#",
-    "#~~~~~~~~~#","#~_~~_~~_~#","#~~~~~~~~~#","#ggggggggg#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Halbzeit", tip:"Level 50! Spreng dich nach oben durch. Unten wartet Eis mit Löchern und Glas.", map:[
+    "###########","#a.......b#","#wwwwwwwww#","#...x.x...#","#.........#","f:::...:::f","#:::.@.:::#","#.........#",
+    "#~~~~~~~~~#","#~_~~_~~_~#","#~~~~~~~~~#","#ggggggggg#","#a..c.d..b#","#d.......c#","###########"]},
   { name:"Zündschnur", tip:"Eine lange Zündschnur aus Kisten. Ein Stoss genügt.", map:[
     "###########","#a.......b#","#wwwwwwwww#","#........x#","#.c....d.x#","#........x#","#....@...x#","#........x#",
     "#........x#","#........x#","#.a....b.x#","#........x#","#wwwwwwww##","#c.......d#","###########"]},
@@ -326,15 +333,15 @@ const LEVELS = [
   { name:"Geheimgang", tip:"Manche Wände sind brüchig. Eine Kiste findet den Weg.", map:[
     "#####a#####","#.........#","#.#######.#","#.#b.w.c#.#","#.###x###.#","#.........#","#.#.#@#.#.#","#.#.#.#.#.#",
     "#...#.#...#","#####.#####","#ww.....ww#","dwx.....xwe","#ww.....ww#","#.a.......#","###d#e#c#b#"]},
-  { name:"Scherbenhaufen", tip:"Doppeltes Glas. Lass die Kisten die Arbeit machen.", map:[
-    "#a#b#c#d#e#","#.........#","#ggggggggg#","#ggggggggg#","#.x..x..x.#","#.........#","#....@....#","#.........#",
-    "#.x..x..x.#","#ggggggggg#","#ggggggggg#","#.........#","#.........#","#.........#","#e#d#c#b#a#"]},
+  { name:"Scherbenhaufen", tip:"Der Tresor in der Mitte hat brüchige Mauern und Glas. Erst die Kisten, dann mit Schwung hinein.", map:[
+    "###########","#a.......b#","#..__.__..#","#.wwwwwww.#","#.wgggggw.#","#.wgc.dgw.#","#xwg...gwx#","#.wgd.cgw.#",
+    "#.wgggggw.#","#.wwwwwww.#","#..__.__..#","#....@....#","#.........#","#b.......a#","###########"]},
   { name:"Engpass", tip:"Kisten blockieren die Brücke. Jede Explosion stösst dich zurück, bleib in der Spur!", map:[
     "#####a#####","#.c.....d.#","#____x____#","#____.____#","#____x____#","#____.____#","c....@....d","#____.____#",
     "#____x____#","#____.____#","#____x____#","#.........#","#.a.....b.#","#.........#","#####b#####"]},
   { name:"Generalprobe", tip:"Die Generalprobe vor dem Finale: Schalter, Eis, Kisten und Glas.", map:[
-    "#a#b#c#d#e#","#.........#","#wwwwwwwww#","#.x.....x.#","#~~~~~~~~~#","#####=#####","f~~~~~~~~~f","#...s@....#",
-    "#~~~~~~~~~#","#####-#####","#.........#","#.g.g.g.g.#","#:::::::::#","#.........#","#e#d#c#b#a#"]},
+    "###########","#ab..e..cd#","#wwwwwwwww#","#.x.....x.#","#~~~~~~~~~#","#####=#####","f~~~~~~~~~f","#...s@....#",
+    "#~~~~~~~~~#","#####-#####","#.........#","#.g.g.g.g.#","#:::::::::#","#d.a.e.b.c#","###########"]},
   { name:"Finale", tip:"Sechs Paare und alles, was du gelernt hast. Viel Glück!", map:[
     "#a#b#c#d#e#","#.........#","#.ggggggg.#","f.~~~~~~~.f","#.~_~~~_~.#","#.~~~~~~~.#","###=#.#=###","#....@....#",
     "#s.......s#","###-#_#-###","#.........#","#.__:::__.#","#.........#","#..g...g..#","#e#d#c#b#a#"]},
@@ -1064,9 +1071,28 @@ function toast(msg, ms = 2500){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.classList.add("fade"); toastTimer = setTimeout(() => el.hidden = true, 400); }, ms);
 }
+// levels are shown in pages of 20 (one page per level package)
+const PAGE = 20;
+let lvlPage = -1;
 function renderLevels(){
+  const pages = Math.ceil(LEVELS.length / PAGE);
+  if (lvlPage < 0 || lvlPage >= pages) lvlPage = Math.floor(cur / PAGE);
+  const tabs = $("lvlTabs"); tabs.textContent = "";
+  for (let p = 0; p < pages; p++){
+    const from = p * PAGE, to = Math.min(LEVELS.length, from + PAGE);
+    let solved = 0; for (let i = from; i < to; i++) if (progress.best[i] != null) solved++;
+    const t = document.createElement("button");
+    t.setAttribute("aria-pressed", String(p === lvlPage));
+    t.disabled = from >= progress.unlocked;
+    const lab = document.createElement("span"); lab.textContent = `${from + 1}–${to}`;
+    const sm = document.createElement("small"); sm.textContent = `${solved}/${to - from} gelöst`;
+    t.append(lab, sm);
+    t.addEventListener("click", () => { lvlPage = p; renderLevels(); });
+    tabs.append(t);
+  }
   const box = $("levels"); box.textContent = "";
   LEVELS.forEach((L, i) => {
+    if (Math.floor(i / PAGE) !== lvlPage) return;
     const b = document.createElement("button");
     b.id = "lvl" + i;
     const locked = i >= progress.unlocked;
@@ -1093,7 +1119,7 @@ function begin(){
 function openMenu(){
   paused = true; joy = {x:0, y:0, on:false}; ptr = ptr2 = null; $("joy").hidden = true; $("brake").hidden = true;
   $("playBtn").textContent = started ? "Weiterspielen" : "Spielen";
-  renderLevels(); updateHint();
+  lvlPage = -1; renderLevels(); updateHint();
   $("menu").hidden = false;
 }
 let started = false;

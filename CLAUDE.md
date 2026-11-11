@@ -28,7 +28,8 @@ Murmel-Rätselspiel fürs iPhone, inspiriert von Mechaniken klassischer Murmelsp
 - **Vor jedem iPhone-Build** (Xcode ▶ oder Archive): `git pull`, dann `npm run sync`. Sonst fehlen neue Level in der App.
 - **Das Level „Finale“ ist immer das letzte.** Neue Level werden direkt *vor* dem Finale eingefügt. Die Levelprüfung erzwingt das.
 - Levelnamen sind eindeutig. Jedes Level hat einen kurzen Tipp auf Deutsch.
-- Neue Level sollen von Level zu Level etwas schwieriger werden und Abwechslung bringen (nicht nur Varianten derselben Idee).
+- Neue Level sollen von Level zu Level etwas schwieriger werden und Abwechslung bringen (nicht nur Varianten derselben Idee). **Nicht immer den gleichen Grundriss** (z. B. Steine im Rahmen `#a#b#c#d#e#` oben/unten): Thomas hat Wiederholungen bemerkt (Nov. 2026, Level 13/35/46/49/57/59 neu gebaut). Steine auch im Innern, an Seiten, in Kammern platzieren.
+- Levelauswahl zeigt Seiten zu 20 Leveln (Reiter = Levelpakete).
 
 ## Dateien
 
